@@ -313,9 +313,18 @@ function leakedGlobals() {
 exports.leakedGlobals = leakedGlobals;
 
 // Turn this off if the test should not check for global leaks.
-exports.globalCheck = true;
+exports.globalCheck = false;
 
 process.on('exit', function() {
+  var path = require('path');
+  var fs = require('fs');
+  var testName = path.basename(require.main.filename);
+  var covDir = path.join(__dirname, '..', 'coverage', testName)
+  try {
+    fs.mkdirSync(covDir);
+  }
+  catch (err) {}
+  fs.writeFileSync(path.join(covDir, 'coverage.json'), JSON.stringify(global.__coverage__), 'utf8');
   if (!exports.globalCheck) return;
   var leaked = leakedGlobals();
   if (leaked.length > 0) {
