@@ -6,11 +6,6 @@ var gotError = false;
 
 var server = net.createServer(function(socket) {
 });
-server.listen(common.PORT, function() {
-  assert(false);
-});
-server.on('error', function(error) {
-  common.debug(error);
-  assert(false);
-});
+server.listen(common.PORT, assert.fail);
+server.on('error', assert.fail);
 server.close();

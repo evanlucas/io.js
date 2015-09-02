@@ -6,7 +6,8 @@ var join = require('path').join;
 
 var filename = join(common.tmpDir, 'append.txt');
 
-common.error('appending to ' + filename);
+//console.error('appending to ' + filename);
+console.error('appending to ' + filename);
 
 var currentFileData = 'ABCD';
 
@@ -28,11 +29,12 @@ fs.appendFile(filename, s, function(e) {
   if (e) throw e;
 
   ncallbacks++;
-  common.error('appended to file');
+  //console.error('appended to file');
+  console.error('appended to file');
 
   fs.readFile(filename, function(e, buffer) {
     if (e) throw e;
-    common.error('file read');
+    console.error('file read');
     ncallbacks++;
     assert.equal(Buffer.byteLength(s), buffer.length);
   });
@@ -46,11 +48,11 @@ fs.appendFile(filename2, s, function(e) {
   if (e) throw e;
 
   ncallbacks++;
-  common.error('appended to file2');
+  console.error('appended to file2');
 
   fs.readFile(filename2, function(e, buffer) {
     if (e) throw e;
-    common.error('file2 read');
+    console.error('file2 read');
     ncallbacks++;
     assert.equal(Buffer.byteLength(s) + currentFileData.length, buffer.length);
   });
@@ -61,17 +63,17 @@ var filename3 = join(common.tmpDir, 'append3.txt');
 fs.writeFileSync(filename3, currentFileData);
 
 var buf = new Buffer(s, 'utf8');
-common.error('appending to ' + filename3);
+console.error('appending to ' + filename3);
 
 fs.appendFile(filename3, buf, function(e) {
   if (e) throw e;
 
   ncallbacks++;
-  common.error('appended to file3');
+  console.error('appended to file3');
 
   fs.readFile(filename3, function(e, buffer) {
     if (e) throw e;
-    common.error('file3 read');
+    console.error('file3 read');
     ncallbacks++;
     assert.equal(buf.length + currentFileData.length, buffer.length);
   });
@@ -81,14 +83,14 @@ fs.appendFile(filename3, buf, function(e) {
 var filename4 = join(common.tmpDir, 'append4.txt');
 fs.writeFileSync(filename4, currentFileData);
 
-common.error('appending to ' + filename4);
+console.error('appending to ' + filename4);
 
 var m = 0o600;
 fs.appendFile(filename4, n, { mode: m }, function(e) {
   if (e) throw e;
 
   ncallbacks++;
-  common.error('appended to file4');
+  console.error('appended to file4');
 
   // windows permissions aren't unix
   if (!common.isWindows) {
@@ -98,7 +100,7 @@ fs.appendFile(filename4, n, { mode: m }, function(e) {
 
   fs.readFile(filename4, function(e, buffer) {
     if (e) throw e;
-    common.error('file4 read');
+    console.error('file4 read');
     ncallbacks++;
     assert.equal(Buffer.byteLength('' + n) + currentFileData.length,
                  buffer.length);
@@ -106,7 +108,7 @@ fs.appendFile(filename4, n, { mode: m }, function(e) {
 });
 
 process.on('exit', function() {
-  common.error('done');
+  console.error('done');
   assert.equal(8, ncallbacks);
 
   fs.unlinkSync(filename);

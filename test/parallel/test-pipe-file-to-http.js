@@ -17,15 +17,15 @@ var server = http.createServer(function(req, res) {
   var timeoutId;
   assert.equal('POST', req.method);
   req.pause();
-  common.error('request paused');
+  console.error('request paused');
 
   setTimeout(function() {
     req.resume();
-    common.error('request resumed');
+    console.error('request resumed');
   }, 1000);
 
   req.on('data', function(chunk) {
-    common.error('recv data! nchars = ' + chunk.length);
+    console.error('recv data! nchars = ' + chunk.length);
     count += chunk.length;
   });
 
@@ -59,7 +59,7 @@ function makeRequest() {
     method: 'POST'
   });
 
-  common.error('pipe!');
+  console.error('pipe!');
 
   var s = fs.ReadStream(filename);
   s.pipe(req);
@@ -72,7 +72,7 @@ function makeRequest() {
   s.on('close', function(err) {
     if (err) throw err;
     clientReqComplete = true;
-    common.error('client finished sending request');
+    console.error('client finished sending request');
   });
 
   req.on('response', function(res) {

@@ -22,15 +22,15 @@ server.on('listening', function() {
     method: 'HEAD',
     path: '/'
   }, function(res) {
-    common.error('response');
+    console.error('response');
     res.on('end', function() {
-      common.error('response end');
+      console.error('response end');
       server.close();
       responseComplete = true;
     });
     res.resume();
   });
-  common.error('req');
+  console.error('req');
   req.end();
 });
 

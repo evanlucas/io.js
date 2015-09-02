@@ -4,8 +4,6 @@ var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
 
-common.debug('load test-module-loading.js');
-
 // assert that this is the main module.
 assert.equal(require.main.id, '.', 'main module should have id of \'.\'');
 assert.equal(require.main, module, 'require.main should === module');
@@ -56,36 +54,34 @@ assert.equal('D', d4.D());
 
 assert.ok((new a.SomeClass()) instanceof c.SomeClass);
 
-common.debug('test index.js modules ids and relative loading');
 var one = require('../fixtures/nested-index/one'),
     two = require('../fixtures/nested-index/two');
 assert.notEqual(one.hello, two.hello);
 
-common.debug('test index.js in a folder with a trailing slash');
 var three = require('../fixtures/nested-index/three'),
     threeFolder = require('../fixtures/nested-index/three/'),
     threeIndex = require('../fixtures/nested-index/three/index.js');
 assert.equal(threeFolder, threeIndex);
 assert.notEqual(threeFolder, three);
 
-common.debug('test package.json require() loading');
+//common.debug('test package.json require() loading');
 assert.equal(require('../fixtures/packages/main').ok, 'ok',
              'Failed loading package');
 assert.equal(require('../fixtures/packages/main-index').ok, 'ok',
              'Failed loading package with index.js in main subdir');
 
-common.debug('test cycles containing a .. path');
+//common.debug('test cycles containing a .. path');
 var root = require('../fixtures/cycles/root'),
     foo = require('../fixtures/cycles/folder/foo');
 assert.equal(root.foo, foo);
 assert.equal(root.sayHello(), root.hello);
 
-common.debug('test node_modules folders');
+//common.debug('test node_modules folders');
 // asserts are in the fixtures files themselves,
 // since they depend on the folder structure.
 require('../fixtures/node_modules/foo');
 
-common.debug('test name clashes');
+//common.debug('test name clashes');
 // this one exists and should import the local module
 var my_path = require('../fixtures/path');
 assert.ok(common.indirectInstanceOf(my_path.path_func, Function));
@@ -102,7 +98,7 @@ try {
 
 assert.equal(require('path').dirname(__filename), __dirname);
 
-common.debug('load custom file types with extensions');
+//common.debug('load custom file types with extensions');
 require.extensions['.test'] = function(module, filename) {
   var content = fs.readFileSync(filename).toString();
   assert.equal('this is custom source\n', content);
@@ -115,7 +111,7 @@ assert.equal(require('../fixtures/registerExt').test, 'passed');
 // unknown extension, load as .js
 assert.equal(require('../fixtures/registerExt.hello.world').test, 'passed');
 
-common.debug('load custom file types that return non-strings');
+//common.debug('load custom file types that return non-strings');
 require.extensions['.test'] = function(module, filename) {
   module.exports = {
     custom: 'passed'
@@ -139,7 +135,7 @@ try {
 }
 
 // Check load order is as expected
-common.debug('load order');
+//common.debug('load order');
 
 var loadOrder = '../fixtures/module-load-order/',
     msg = 'Load order incorrect.';

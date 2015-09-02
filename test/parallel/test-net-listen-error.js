@@ -10,7 +10,6 @@ server.listen(1, '1.1.1.1', function() { // EACCESS or EADDRNOTAVAIL
   assert(false);
 });
 server.on('error', function(error) {
-  common.debug(error);
   gotError = true;
 });
 

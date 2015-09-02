@@ -15,8 +15,7 @@ s.listen(common.PORT, function() {
                     function(err, stdout, stderr) {
                       if (err) throw err;
                       s.close();
-                      common.error('curled response correctly');
-                      common.error(common.inspect(stdout));
+                      console.error('curled response correctly');
                     });
 });
 

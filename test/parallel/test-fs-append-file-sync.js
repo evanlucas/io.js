@@ -20,7 +20,7 @@ common.refreshTmpDir();
 // test that empty file will be created and have content added
 var filename = join(common.tmpDir, 'append-sync.txt');
 
-common.error('appending to ' + filename);
+console.error('appending to ' + filename);
 fs.appendFileSync(filename, data);
 
 var fileData = fs.readFileSync(filename);
@@ -32,7 +32,7 @@ assert.equal(Buffer.byteLength(data), fileData.length);
 var filename2 = join(common.tmpDir, 'append-sync2.txt');
 fs.writeFileSync(filename2, currentFileData);
 
-common.error('appending to ' + filename2);
+console.error('appending to ' + filename2);
 fs.appendFileSync(filename2, data);
 
 var fileData2 = fs.readFileSync(filename2);
@@ -44,7 +44,7 @@ assert.equal(Buffer.byteLength(data) + currentFileData.length,
 var filename3 = join(common.tmpDir, 'append-sync3.txt');
 fs.writeFileSync(filename3, currentFileData);
 
-common.error('appending to ' + filename3);
+console.error('appending to ' + filename3);
 
 var buf = new Buffer(data, 'utf8');
 fs.appendFileSync(filename3, buf);
@@ -57,7 +57,7 @@ assert.equal(buf.length + currentFileData.length, fileData3.length);
 var filename4 = join(common.tmpDir, 'append-sync4.txt');
 fs.writeFileSync(filename4, currentFileData, { mode: m });
 
-common.error('appending to ' + filename4);
+console.error('appending to ' + filename4);
 var m = 0o600;
 fs.appendFileSync(filename4, num, { mode: m });
 
@@ -75,7 +75,7 @@ assert.equal(Buffer.byteLength('' + num) + currentFileData.length,
 //exit logic for cleanup
 
 process.on('exit', function() {
-  common.error('done');
+  console.error('done');
 
   fs.unlinkSync(filename);
   fs.unlinkSync(filename2);

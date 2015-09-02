@@ -7,7 +7,7 @@ var binaryString = '';
 for (var i = 255; i >= 0; i--) {
   var s = '\'\\' + i.toString(8) + '\'';
   var S = eval(s);
-  common.error(s +
+  console.error(s +
                ' ' +
                JSON.stringify(S) +
                ' ' +
@@ -24,7 +24,7 @@ var echoServer = net.Server(function(connection) {
   console.error('SERVER got connection');
   connection.setEncoding('binary');
   connection.on('data', function(chunk) {
-    common.error('SERVER recved: ' + JSON.stringify(chunk));
+    console.error('SERVER recved: ' + JSON.stringify(chunk));
     connection.write(chunk, 'binary');
   });
   connection.on('end', function() {
@@ -48,7 +48,7 @@ echoServer.on('listening', function() {
     console.error('CLIENT data %j', chunk);
     var n = j + chunk.length;
     while (j < n && j < 256) {
-      common.error('CLIENT write ' + j);
+      console.error('CLIENT write ' + j);
       c.write(String.fromCharCode(j), 'binary');
       j++;
     }

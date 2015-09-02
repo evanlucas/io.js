@@ -93,15 +93,9 @@ function test_simple_relative_symlink(callback) {
     unlink.push(t[0]);
   });
   var result = fs.realpathSync(entry);
-  assert.equal(result, path.resolve(expected),
-      'got ' + common.inspect(result) + ' expected ' +
-      common.inspect(expected));
+  assert.equal(result, path.resolve(expected));
   asynctest(fs.realpath, [entry], callback, function(err, result) {
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(expected));
+    assert.equal(result, path.resolve(expected));
   });
 }
 
@@ -125,17 +119,9 @@ function test_simple_absolute_symlink(callback) {
     unlink.push(t[0]);
   });
   var result = fs.realpathSync(entry);
-  assert.equal(result, path.resolve(expected),
-      'got ' +
-      common.inspect(result) +
-      ' expected ' +
-      common.inspect(expected));
+  assert.equal(result, path.resolve(expected));
   asynctest(fs.realpath, [entry], callback, function(err, result) {
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(expected));
+    assert.equal(result, path.resolve(expected));
   });
 }
 
@@ -163,11 +149,7 @@ function test_deep_relative_file_symlink(callback) {
 
   assert.equal(fs.realpathSync(entry), path.resolve(expected));
   asynctest(fs.realpath, [entry], callback, function(err, result) {
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(path.resolve(expected)));
+    assert.equal(result, path.resolve(expected));
   });
 }
 
@@ -195,11 +177,7 @@ function test_deep_relative_dir_symlink(callback) {
   assert.equal(fs.realpathSync(entry), path.resolve(expected));
 
   asynctest(fs.realpath, [entry], callback, function(err, result) {
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(path.resolve(expected)));
+    assert.equal(result, path.resolve(expected));
   });
 }
 
@@ -280,11 +258,7 @@ function test_relative_input_cwd(callback) {
   assert.equal(fs.realpathSync(entry), path.resolve(expected));
   asynctest(fs.realpath, [entry], callback, function(err, result) {
     process.chdir(origcwd);
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(path.resolve(expected)));
+    assert.equal(result, path.resolve(expected));
     return true;
   });
 }
@@ -337,11 +311,7 @@ function test_deep_symlink_mix(callback) {
   var expected = tmpAbsDir + '/cycles/root.js';
   assert.equal(fs.realpathSync(entry), path.resolve(expected));
   asynctest(fs.realpath, [entry], callback, function(err, result) {
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(path.resolve(expected)));
+    assert.equal(result, path.resolve(expected));
     return true;
   });
 }
@@ -356,11 +326,7 @@ function test_non_symlinks(callback) {
   assert.equal(fs.realpathSync(entry), path.resolve(expected));
   asynctest(fs.realpath, [entry], callback, function(err, result) {
     process.chdir(origcwd);
-    assert.equal(result, path.resolve(expected),
-        'got ' +
-        common.inspect(result) +
-        ' expected ' +
-        common.inspect(path.resolve(expected)));
+    assert.equal(result, path.resolve(expected));
     return true;
   });
 }
@@ -369,15 +335,11 @@ var upone = path.join(process.cwd(), '..');
 function test_escape_cwd(cb) {
   console.log('test_escape_cwd');
   asynctest(fs.realpath, ['..'], cb, function(er, uponeActual) {
-    assert.equal(upone, uponeActual,
-        'realpath("..") expected: ' + path.resolve(upone) +
-        ' actual:' + uponeActual);
+    assert.equal(upone, uponeActual);
   });
 }
 var uponeActual = fs.realpathSync('..');
-assert.equal(upone, uponeActual,
-    'realpathSync("..") expected: ' + path.resolve(upone) +
-    ' actual:' + uponeActual);
+assert.equal(upone, uponeActual);
 
 
 // going up with .. multiple times

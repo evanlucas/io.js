@@ -35,6 +35,7 @@ var fs = require('fs');
 var net = require('net');
 var netBinding = process.binding('net');
 var path = require('path');
+var util = require('util');
 
 var DATA = {
   'ppid' : process.pid,
@@ -52,7 +53,7 @@ var logChild = function(d) {
 
   d.split('\n').forEach(function(l) {
     if (l.length > 0) {
-      common.debug('CHILD: ' + l);
+      util.debug('CHILD: ' + l);
     }
   });
 };

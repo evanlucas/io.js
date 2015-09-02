@@ -35,7 +35,6 @@ server.listen(common.PORT, function() {
   }, function() {
     console.error('connected');
     client.pause();
-    common.debug('paused');
     send();
     function send() {
       console.error('sending');
@@ -48,7 +47,6 @@ server.listen(common.PORT, function() {
         return process.nextTick(send);
       }
       sent += bufSize;
-      common.debug('sent: ' + sent);
       resumed = true;
       client.resume();
       console.error('resumed', client);
@@ -61,7 +59,6 @@ server.listen(common.PORT, function() {
     console.error('received', received);
     console.error('sent', sent);
     if (received >= sent) {
-      common.debug('received: ' + received);
       client.end();
       server.close();
     }

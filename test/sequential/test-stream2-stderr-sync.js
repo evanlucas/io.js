@@ -3,9 +3,6 @@
 
 var common = require('../common');
 var assert = require('assert');
-var util = require('util');
-
-var errnoException = util._errnoException;
 
 function parent() {
   var spawn = require('child_process').spawn;

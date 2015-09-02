@@ -47,7 +47,7 @@ server.on('listening', function() {
   req.write('3\n');
   req.end();
 
-  common.error('client finished sending request');
+  console.error('client finished sending request');
 });
 
 process.on('exit', function() {

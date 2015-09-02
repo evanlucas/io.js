@@ -8,7 +8,6 @@ var serverRequests = 0;
 var clientResponses = 0;
 
 var server = http.createServer(function(req, res) {
-  common.debug('Server got GET request');
   req.resume();
   ++serverRequests;
   res.writeHead(200);
@@ -18,7 +17,6 @@ var server = http.createServer(function(req, res) {
   }, 50);
 });
 server.on('connect', function(req, socket, firstBodyChunk) {
-  common.debug('Server got CONNECT request');
   serverConnected = true;
   socket.write('HTTP/1.1 200 Connection established\r\n\r\n');
   socket.resume();
@@ -33,7 +31,6 @@ server.listen(common.PORT, function() {
     path: 'google.com:80'
   });
   req.on('connect', function(res, socket, firstBodyChunk) {
-    common.debug('Client got CONNECT response');
     socket.end();
     socket.on('end', function() {
       doRequest(0);
@@ -49,7 +46,6 @@ function doRequest(i) {
     port: common.PORT,
     path: '/request' + i
   }, function(res) {
-    common.debug('Client got GET response');
     var data = '';
     res.setEncoding('utf8');
     res.on('data', function(chunk) {
