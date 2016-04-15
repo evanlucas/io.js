@@ -610,6 +610,15 @@ jslint-ci:
 	$(NODE) tools/jslint.js -f tap -o test-eslint.tap benchmark lib src test \
 	  tools/doc tools/eslint-rules tools/jslint.js
 
+cover:
+	@mkdir -p coverage/
+	bash tools/coverage/patch-node-gyp.sh
+	./configure
+	@istanbul instrument --output lib-cov/ ./lib/
+
+cover-test: cover
+	bash tools/coverage/run-tests.sh
+
 CPPLINT_EXCLUDE ?=
 CPPLINT_EXCLUDE += src/node_lttng.cc
 CPPLINT_EXCLUDE += src/node_root_certs.h

@@ -325,6 +325,10 @@ if (global.Symbol) {
   knownGlobals.push(Symbol);
 }
 
+if (process.env.CORE_COVERAGE && global.__coverage__) {
+  knownGlobals.push(__coverage__);
+}
+
 function leakedGlobals() {
   var leaked = [];
 
@@ -337,9 +341,21 @@ function leakedGlobals() {
 exports.leakedGlobals = leakedGlobals;
 
 // Turn this off if the test should not check for global leaks.
-exports.globalCheck = true;
+exports.globalCheck = !process.env.CORE_COVERAGE;
 
 process.on('exit', function() {
+  if (process.env.CORE_COVERAGE) {
+    const path = require('path');
+    const fs = require('fs');
+    const testName = path.basename(require.main.filename);
+    const covDir = path.join(__dirname, '..', 'coverage', testName);
+    try {
+      fs.mkdirSync(covDir);
+    } catch (err) {}
+    fs.writeFileSync(path.join(covDir, 'coverage.json'),
+                     JSON.stringify(global.__coverage__),
+                     'utf8');
+  }
   if (!exports.globalCheck) return;
   var leaked = leakedGlobals();
   if (leaked.length > 0) {

@@ -89,3 +89,6 @@ test.tap
 # Xcode workspaces and project folders
 *.xcodeproj
 *.xcworkspace
+/coverage
+/lib-cov
+node.gyp.orig
