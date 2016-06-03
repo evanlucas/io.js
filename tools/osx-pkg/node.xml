@@ -5,6 +5,7 @@
     <title>Node.js</title>
     <welcome file="welcome.rtf" mime-type="text/rtf"/>
     <conclusion file="conclusion.rtf" mime-type="text/rtf"/>
+    <domains enable_anywhere="true" enable_currentUserHome="true" enable_localSystem="true"/>
     <allowed-os-versions>
       <os-version min="10.7.0"/>
     </allowed-os-versions>

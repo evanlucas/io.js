@@ -514,7 +514,7 @@ release-only:
 		exit 1 ; \
 	fi
 
-$(PKG): release-only
+$(PKG):
 	rm -rf $(PKGDIR)
 	rm -rf out/deps out/Release
 	$(PYTHON) ./configure \
@@ -522,24 +522,25 @@ $(PKG): release-only
 		--tag=$(TAG) \
 		--release-urlbase=$(RELEASE_URLBASE) \
 		$(CONFIG_FLAGS) $(BUILD_RELEASE_FLAGS)
-	$(MAKE) install V=$(V) DESTDIR=$(PKGDIR)
+	$(MAKE) -j8 install V=$(V) DESTDIR=$(PKGDIR)
 	SIGN="$(CODESIGN_CERT)" PKGDIR="$(PKGDIR)" bash tools/osx-codesign.sh
 	FULLVERSION="$(FULLVERSION)" NPMVERSION="$(NPMVERSION)" tools/osx-pkg/copy_langs.sh
 
 	cp LICENSE tools/osx-pkg/resources/LICENSE
 
 	pkgbuild \
-		--root $(PKGDIR) \
+		--root $(PKGDIR)/usr/local \
 		--identifier org.nodejs.node.pkg \
 		--version 1 \
-		--install-location / \
+		--install-location /usr/local \
 		org.nodejs.node.pkg
 
 	pkgbuild \
 		--root deps/npm \
 		--identifier org.nodejs.npm.pkg \
 		--version 1 \
-		--install-location / \
+		--install-location /usr/local/lib/node_modules/npm \
+    --component-plist tools/osx-pkg/npm-component.plist \
 		--scripts tools/osx-pkg/scripts \
 		org.nodejs.npm.pkg
 
