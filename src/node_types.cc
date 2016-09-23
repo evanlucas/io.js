@@ -43,9 +43,11 @@ using v8::Value;
   V(isRegExp, IsRegExp)                                                       \
   V(isSet, IsSet)                                                             \
   V(isSetIterator, IsSetIterator)                                             \
+  V(isSharedArrayBuffer, IsSharedArrayBuffer)                                 \
   V(isString, IsString)                                                       \
   V(isStringObject, IsStringObject)                                           \
   V(isSymbol, IsSymbol)                                                       \
+  V(isSymbolObject, IsSymbolObject)                                           \
   V(isTrue, IsTrue)                                                           \
   V(isTypedArray, IsTypedArray)                                               \
   V(isUint32, IsUint32)                                                       \

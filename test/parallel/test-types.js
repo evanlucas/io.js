@@ -40,6 +40,7 @@ const SET_ITERATOR = { type: 'set_iterator', value: new Set().keys() };
 const ERROR = { type: 'error', value: new Error() };
 const TYPE_ERROR = { type: 'type_error', value: new TypeError() };
 const SYMBOL = { type: 'symbol', value: Symbol('test') };
+const SYMBOL_OBJECT = { type: 'symbol_object', value: new Object(Symbol('a')) };
 const POSITIVE_INT = { type: 'positive_int', value: 1 };
 const NEGATIVE_INT = { type: 'negative_int', value: -1 };
 const WEAK_MAP = { type: 'weak_map', value: new WeakMap() };
@@ -100,9 +101,11 @@ const fns = new Set([
   // 'isRegExp',
   map('isSet', [SET], [MAP, OBJECT]),
   map('isSetIterator', [SET_ITERATOR], [MAP, MAP_ITERATOR, SET]),
+  // 'isSharedArrayBuffer',
   map('isString', [STRING], [OBJECT, TRUE]),
   // 'isStringObject',
   map('isSymbol', [SYMBOL], [STRING, OBJECT]),
+  map('isSymbolObject', [SYMBOL_OBJECT], [SYMBOL, OBJECT, STRING]),
   map('isTrue', [TRUE], [FALSE, FALSE_OBJECT, TRUE_OBJECT]),
   // 'isTypedArray',
   map('isUint32', [POSITIVE_INT], [NEGATIVE_INT, STRING]),
