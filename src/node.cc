@@ -2675,7 +2675,7 @@ static void EnvGetter(Local<String> property,
   Isolate* isolate = info.GetIsolate();
 #ifdef __POSIX__
   node::Utf8Value key(isolate, property);
-  const char* val = getenv(*key);
+  const char* val = secure_getenv(*key);
   if (val) {
     return info.GetReturnValue().Set(String::NewFromUtf8(isolate, val));
   }
@@ -2724,7 +2724,7 @@ static void EnvQuery(Local<String> property,
   int32_t rc = -1;  // Not found unless proven otherwise.
 #ifdef __POSIX__
   node::Utf8Value key(info.GetIsolate(), property);
-  if (getenv(*key))
+  if (secure_getenv(*key))
     rc = 0;
 #else  // _WIN32
   String::Value key(property);
@@ -2772,8 +2772,10 @@ static void EnvEnumerator(const PropertyCallbackInfo<Array>& info) {
 
 #ifdef __POSIX__
   int size = 0;
-  while (environ[size])
-    size++;
+  if (!(getuid() != geteuid() || getgid() != getegid())) {
+    while (environ[size])
+      size++;
+  }
 
   Local<Array> envarr = Array::New(isolate);
 
