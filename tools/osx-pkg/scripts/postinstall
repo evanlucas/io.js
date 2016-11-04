@@ -1,4 +1,5 @@
 #!/bin/sh
 
+echo "running postinstall..."
 cd /usr/local/bin
 ln -sf ../lib/node_modules/npm/bin/npm-cli.js npm
