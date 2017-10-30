@@ -30,6 +30,7 @@ using v8::HandleScope;
 using v8::Isolate;
 using v8::Local;
 using v8::Object;
+using v8::String;
 using v8::Value;
 
 using v8_inspector::StringBuffer;
@@ -299,7 +300,23 @@ class NodeInspectorClient : public V8InspectorClient {
       : env_(env), platform_(platform), terminated_(false),
         running_nested_loop_(false) {
     client_ = V8Inspector::create(env->isolate(), this);
-    contextCreated(env->context(), "Node.js Main Context");
+    HandleScope(env->isolate());
+    auto process_object = env->process_object();
+    auto argv =
+          process_object->Get(env->context(),
+                              env->argv_string())
+          .ToLocalChecked()
+          .As<Array>();
+    std::stringstream title;
+    title << "Node.js Main Context";
+    if (argv->Length() > 1) {
+      Local<String> filename =
+        argv->Get(env->context(), 1).ToLocalChecked().As<String>();
+      String::Utf8Value filename_str(filename);
+      title << '(' << *filename_str << ')';
+    }
+
+    contextCreated(env->context(), title.str());
   }
 
   void runMessageLoopOnPause(int context_group_id) override {
@@ -688,4 +705,3 @@ bool Agent::IsWaitingForConnect() {
 
 }  // namespace inspector
 }  // namespace node
-

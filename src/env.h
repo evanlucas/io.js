@@ -100,6 +100,7 @@ class ModuleWrap;
 #define PER_ISOLATE_STRING_PROPERTIES(V)                                      \
   V(address_string, "address")                                                \
   V(args_string, "args")                                                      \
+  V(argv_string, "argv")                                                      \
   V(async, "async")                                                           \
   V(buffer_string, "buffer")                                                  \
   V(bytes_string, "bytes")                                                    \
