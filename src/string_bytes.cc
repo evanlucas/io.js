@@ -38,16 +38,11 @@
 
 // TODO(addaleax): These should all have better error messages. In particular,
 // they should mention what the actual limits are.
+
 #define SB_MALLOC_FAILED_ERROR \
   v8::Exception::Error(OneByteString(isolate, "\"toString()\" failed"))
 
-#define SB_STRING_TOO_LONG_ERROR \
-  v8::Exception::Error(OneByteString(isolate, "\"toString()\" failed"))
-
 #define SB_BUFFER_CREATION_ERROR \
-  v8::Exception::Error(OneByteString(isolate, "\"toString()\" failed"))
-
-#define SB_BUFFER_SIZE_EXCEEDED_ERROR \
   v8::Exception::Error(OneByteString(isolate, "\"toString()\" failed"))
 
 namespace node {
@@ -58,6 +53,22 @@ using v8::Local;
 using v8::MaybeLocal;
 using v8::String;
 using v8::Value;
+
+std::string string_too_long() {
+  std::string max_str_length = std::to_string(v8::String::kMaxLength);
+  std::string max_str_prefix = "\"toString()\" failed. Max string length is \"";
+  std::string max_str_error = max_str_prefix + max_str_length + "\".";
+  return max_str_error;
+}
+
+
+std::string buf_too_large() {
+  std::string max_buf_length = std::to_string(Buffer::kMaxLength);
+  std::string max_buf_prefix = "\"toString()\" failed. Max Buffer length is \"";
+  std::string max_buf_error = max_buf_prefix + max_buf_length + "\".";
+  return max_buf_error;
+}
+
 
 namespace {
 
@@ -126,7 +137,8 @@ class ExternString: public ResourceType {
 
     if (str.IsEmpty()) {
       delete h_str;
-      *error = SB_STRING_TOO_LONG_ERROR;
+      *error = v8::Exception::Error(OneByteString(isolate,
+                                                  string_too_long().c_str()));
       return MaybeLocal<Value>();
     }
 
@@ -183,7 +195,8 @@ MaybeLocal<Value> ExternOneByteString::NewSimpleFromCopy(Isolate* isolate,
                              v8::NewStringType::kNormal,
                              length);
   if (str.IsEmpty()) {
-    *error = SB_STRING_TOO_LONG_ERROR;
+    *error = v8::Exception::Error(OneByteString(isolate,
+                                                string_too_long().c_str()));
     return MaybeLocal<Value>();
   }
   return str.ToLocalChecked();
@@ -201,7 +214,8 @@ MaybeLocal<Value> ExternTwoByteString::NewSimpleFromCopy(Isolate* isolate,
                              v8::NewStringType::kNormal,
                              length);
   if (str.IsEmpty()) {
-    *error = SB_STRING_TOO_LONG_ERROR;
+    *error = v8::Exception::Error(OneByteString(isolate,
+                                                string_too_long().c_str()));
     return MaybeLocal<Value>();
   }
   return str.ToLocalChecked();
@@ -491,8 +505,6 @@ size_t StringBytes::Size(Isolate* isolate,
 }
 
 
-
-
 static bool contains_non_ascii_slow(const char* buf, size_t len) {
   for (size_t i = 0; i < len; ++i) {
     if (buf[i] & 0x80)
@@ -613,12 +625,13 @@ static size_t hex_encode(const char* src, size_t slen, char* dst, size_t dlen) {
 }
 
 
-#define CHECK_BUFLEN_IN_RANGE(len)                                    \
-  do {                                                                \
-    if ((len) > Buffer::kMaxLength) {                                 \
-      *error = SB_BUFFER_SIZE_EXCEEDED_ERROR;                         \
-      return MaybeLocal<Value>();                                     \
-    }                                                                 \
+#define CHECK_BUFLEN_IN_RANGE(len)                                           \
+  do {                                                                       \
+    if ((len) > Buffer::kMaxLength) {                                        \
+      *error = v8::Exception::Error(OneByteString(isolate,                   \
+                                                  buf_too_large().c_str())); \
+      return MaybeLocal<Value>();                                            \
+    }                                                                        \
   } while (0)
 
 
@@ -666,7 +679,8 @@ MaybeLocal<Value> StringBytes::Encode(Isolate* isolate,
                                 v8::NewStringType::kNormal,
                                 buflen);
       if (val.IsEmpty()) {
-        *error = SB_STRING_TOO_LONG_ERROR;
+        *error = v8::Exception::Error(OneByteString(isolate,
+                                                    string_too_long().c_str()));
         return MaybeLocal<Value>();
       }
       return val.ToLocalChecked();
