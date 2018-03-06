@@ -33,8 +33,9 @@ stream.on('finish', common.mustCall(function() {
   // make sure that the toString does not throw an error
   fs.readFile(file, 'utf8', common.mustCall(function(err, buf) {
     assert.ok(err instanceof Error);
-    assert(/^(Array buffer allocation failed|"toString\(\)" failed)$/
-             .test(err.message));
+    const exp = new RegExp('^(Array buffer allocation failed' +
+                           '|"toString\\(\\)" failed\. Max string length is)');
+    assert(exp.test(err.message));
     assert.strictEqual(buf, undefined);
   }));
 }));
