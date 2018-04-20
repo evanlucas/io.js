@@ -193,6 +193,13 @@ static node_module* modlist_addon;
 static bool trace_enabled = false;
 static std::string trace_enabled_categories;  // NOLINT(runtime/string)
 static bool abort_on_uncaught_exception = false;
+static uv_threadpool_stats_t tp_stats;
+static int tp_stat_submitted = 0;
+static int tp_stat_started = 0;
+static int tp_stat_done = 0;
+static int tp_idle_max = 0;
+static int tp_idle_min = 0;
+static int tp_queued_max = 0;
 
 // Bit flag used to track security reverts (see node_revert.h)
 unsigned int reverted = 0;
@@ -2509,7 +2516,6 @@ static void MemoryUsage(const FunctionCallbackInfo<Value>& args) {
   fields[3] = isolate->AdjustAmountOfExternalAllocatedMemory(0);
 }
 
-
 static void Kill(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
@@ -2575,6 +2581,29 @@ static void CPUUsage(const FunctionCallbackInfo<Value>& args) {
   // Set the Float64Array elements to be user / system values in microseconds.
   fields[0] = MICROS_PER_SEC * rusage.ru_utime.tv_sec + rusage.ru_utime.tv_usec;
   fields[1] = MICROS_PER_SEC * rusage.ru_stime.tv_sec + rusage.ru_stime.tv_usec;
+}
+
+  
+static void ThreadpoolStats(const FunctionCallbackInfo<Value>& args) {
+  // Get the double array pointer from the Float64Array argument.
+  CHECK(args[0]->IsFloat64Array());
+  Local<Float64Array> array = args[0].As<Float64Array>();
+  // 0 submitted
+  // 1 started
+  // 2 done
+  // 3 queued_max
+  // 4 idle_max
+  // 5 idle_min
+  CHECK_EQ(array->Length(), 6);
+  Local<ArrayBuffer> ab = array->Buffer();
+  double* fields = static_cast<double*>(ab->GetContents().Data());
+  
+  fields[0] = tp_stat_submitted;
+  fields[1] = tp_stat_started;
+  fields[2] = tp_stat_done;
+  fields[3] = tp_queued_max;
+  fields[4] = tp_idle_max;
+  fields[5] = tp_idle_min;
 }
 
 extern "C" void node_module_register(void* m) {
@@ -3671,6 +3700,7 @@ void SetupProcessObject(Environment* env,
   env->SetMethod(process, "hrtime", Hrtime);
 
   env->SetMethod(process, "cpuUsage", CPUUsage);
+  env->SetMethod(process, "threadpoolStats", ThreadpoolStats);
 
   env->SetMethod(process, "dlopen", DLOpen);
 
@@ -4490,7 +4520,28 @@ inline void PlatformInit() {
 #endif  // _WIN32
 }
 
+  
+static void update_stats(int queued, int idle) {
+  if (queued > tp_queued_max) tp_queued_max = queued;
+  if (idle > tp_idle_max) tp_idle_max = idle;
+  if (idle < tp_idle_min) tp_idle_min = idle;
+}
 
+static void stats_submit_cb(unsigned queued, unsigned idle, void* data) {
+  tp_stat_submitted++;
+  update_stats(queued, idle);
+}
+
+static void stats_start_cb(unsigned queued, unsigned idle, void* data) {
+  tp_stat_started++;
+  update_stats(queued, idle);
+}
+  
+static void stats_done_cb(unsigned queued, unsigned idle, void* data) {
+  tp_stat_done++;
+  update_stats(queued, idle);
+}
+  
 void ProcessArgv(int* argc,
                  const char** argv,
                  int* exec_argc,
@@ -4519,6 +4570,12 @@ void ProcessArgv(int* argc,
   if (v8_is_profiling) {
     uv_loop_configure(uv_default_loop(), UV_LOOP_BLOCK_SIGNAL, SIGPROF);
   }
+  
+  uv_loop_configure(uv_default_loop(), UV_THREADPOOL_STATS, &tp_stats);
+  tp_stats.done_cb = stats_done_cb;
+  tp_stats.start_cb = stats_start_cb;
+  tp_stats.submit_cb = stats_submit_cb;
+  tp_stats.data = &tp_stats;
 #endif
 
   // The const_cast doesn't violate conceptual const-ness.  V8 doesn't modify
