@@ -29,6 +29,7 @@
 #include <string.h> /* strrchr */
 #include <fcntl.h>  /* O_CLOEXEC, may be */
 #include <stdio.h>
+#include <errno.h>
 
 #if defined(__STRICT_ANSI__)
 # define inline __inline
@@ -148,7 +149,8 @@ enum {
 
 /* loop flags */
 enum {
-  UV_LOOP_BLOCK_SIGPROF = 1
+  UV_LOOP_BLOCK_SIGPROF = 1,
+  UV_LOOP_STATS_NOTIFY = 2
 };
 
 /* flags of excluding ifaddr */
@@ -189,7 +191,7 @@ int uv__cloexec_ioctl(int fd, int set);
 int uv__cloexec_fcntl(int fd, int set);
 int uv__nonblock_ioctl(int fd, int set);
 int uv__nonblock_fcntl(int fd, int set);
-int uv__close(int fd);
+int uv__close(int fd); /* preserves errno */
 int uv__close_nocheckstdio(int fd);
 int uv__socket(int domain, int type, int protocol);
 int uv__dup(int fd);
@@ -213,9 +215,9 @@ int uv__async_fork(uv_loop_t* loop);
 
 
 /* loop */
-void uv__run_idle(uv_loop_t* loop);
-void uv__run_check(uv_loop_t* loop);
-void uv__run_prepare(uv_loop_t* loop);
+size_t uv__run_idle(uv_loop_t* loop);
+size_t uv__run_check(uv_loop_t* loop);
+size_t uv__run_prepare(uv_loop_t* loop);
 
 /* stream */
 void uv__stream_init(uv_loop_t* loop, uv_stream_t* stream,
@@ -239,8 +241,14 @@ int uv__tcp_keepalive(int fd, int on, unsigned int delay);
 int uv_pipe_listen(uv_pipe_t* handle, int backlog, uv_connection_cb cb);
 
 /* timer */
-void uv__run_timers(uv_loop_t* loop);
+size_t uv__run_timers(uv_loop_t* loop);
 int uv__next_timeout(const uv_loop_t* loop);
+/* Threadpool prototypes */
+void uv__threadpool_stats_add(uv_threadpool_stats_t* s);
+void uv__threadpool_stats_remove(uv_threadpool_stats_t* s);
+void uv__threadpool_report_submit(void);
+void uv__threadpool_report_start(void);
+void uv__threadpool_report_done(void);
 
 /* signal */
 void uv__signal_close(uv_signal_t* handle);
@@ -315,6 +323,25 @@ static const int kFSEventStreamEventFlagItemIsSymlink = 0x00040000;
 #endif /* __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1070 */
 
 #endif /* defined(__APPLE__) */
+
+#define uv__update_stats_ts(loop, field)                                     \
+  do {                                                                       \
+    if (loop->stats != NULL)                                                 \
+      loop->stats->fields.field = uv__hrtime(UV_CLOCK_PRECISE);              \
+  } while (0)
+
+#define uv__update_stats_count(loop, field, value)                           \
+  do {                                                                       \
+    if (loop->stats != NULL)                                                 \
+      loop->stats->fields.field = value;                                     \
+  } while(0)
+
+#define uv__loop_stats_notify(emit_stats, loop)                              \
+  do {                                                                       \
+      if (emit_stats && loop->stats != NULL)                                 \
+        loop->stats->cb(&(loop->stats->fields), loop->stats->data);          \
+  } while (0)
+
 
 UV_UNUSED(static void uv__update_time(uv_loop_t* loop)) {
   /* Use a fast time source if available.  We only need millisecond precision.

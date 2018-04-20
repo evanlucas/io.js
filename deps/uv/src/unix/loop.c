@@ -35,16 +35,19 @@ int uv_loop_init(uv_loop_t* loop) {
   saved_data = loop->data;
   memset(loop, 0, sizeof(*loop));
   loop->data = saved_data;
+  loop->stats = NULL;
+  loop->threadpool_stats = NULL;
 
   heap_init((struct heap*) &loop->timer_heap);
   QUEUE_INIT(&loop->wq);
-  QUEUE_INIT(&loop->active_reqs);
   QUEUE_INIT(&loop->idle_handles);
   QUEUE_INIT(&loop->async_handles);
   QUEUE_INIT(&loop->check_handles);
   QUEUE_INIT(&loop->prepare_handles);
   QUEUE_INIT(&loop->handle_queue);
 
+  loop->active_handles = 0;
+  loop->active_reqs.count = 0;
   loop->nfds = 0;
   loop->watchers = NULL;
   loop->nwatchers = 0;
@@ -182,12 +185,36 @@ void uv__loop_close(uv_loop_t* loop) {
 
 
 int uv__loop_configure(uv_loop_t* loop, uv_loop_option option, va_list ap) {
-  if (option != UV_LOOP_BLOCK_SIGNAL)
-    return UV_ENOSYS;
-
-  if (va_arg(ap, int) != SIGPROF)
-    return UV_EINVAL;
-
-  loop->flags |= UV_LOOP_BLOCK_SIGPROF;
+  struct uv_loop_stats_s* stats;
+  struct uv_threadpool_stats_s* threadpool_stats;
+  switch (option) {
+    case UV_LOOP_BLOCK_SIGNAL:
+      if (va_arg(ap, int) != SIGPROF)
+        return UV_EINVAL;
+      loop->flags |= UV_LOOP_BLOCK_SIGPROF;
+      break;
+    case UV_LOOP_STATS:
+      stats = va_arg(ap, struct uv_loop_stats_s*);
+      if (stats != NULL) {
+        if (stats->cb == NULL)
+          return UV_EINVAL;
+        memset(&(stats->fields), 0, sizeof(uv_loop_stats_data_t));
+      }
+      loop->stats = stats;
+      break;
+    case UV_THREADPOOL_STATS:
+      threadpool_stats = va_arg(ap, struct uv_threadpool_stats_s*);
+      if (threadpool_stats == NULL) {
+        if (loop->threadpool_stats != NULL)
+          uv__threadpool_stats_remove(loop->threadpool_stats);
+        loop->threadpool_stats = NULL;
+      } else {
+        loop->threadpool_stats = threadpool_stats;
+        uv__threadpool_stats_add(loop->threadpool_stats);
+      }
+      break;
+    default:
+      return UV_ENOSYS;
+  }
   return 0;
 }

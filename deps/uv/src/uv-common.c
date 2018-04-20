@@ -627,13 +627,19 @@ int uv_loop_close(uv_loop_t* loop) {
   void* saved_data;
 #endif
 
-  if (!QUEUE_EMPTY(&(loop)->active_reqs))
+  if (uv__has_active_reqs(loop))
     return UV_EBUSY;
 
   QUEUE_FOREACH(q, &loop->handle_queue) {
     h = QUEUE_DATA(q, uv_handle_t, handle_queue);
     if (!(h->flags & UV__HANDLE_INTERNAL))
       return UV_EBUSY;
+  }
+
+  /* Stop listening for threadpool stats if configured */
+  if (loop->threadpool_stats != NULL) {
+    uv__threadpool_stats_remove(loop->threadpool_stats);
+    loop->threadpool_stats = NULL;
   }
 
   uv__loop_close(loop);
